@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Hadi Health - AI-powered medical interviews for better patient care">
+  <meta name="keywords" content="medical AI, healthcare, telemedicine, clinical assessment, SOAP notes">
+  <title>Hadi Health - AI Medical Assistant</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- React and Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      min-height: 100vh;
+    }
+
+    .app-container {
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2c5f7c 0%, #1e4158 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-accent {
+      color: #7ec8e3;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .welcome-screen {
+      text-align: center;
+      padding: 4rem 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .welcome-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1e4158;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .welcome-subtitle {
+      font-size: 1.25rem;
+      color: #5a6c7d;
+      margin-bottom: 3rem;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .role-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .role-selector {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .role-card {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 16px;
+      padding: 3rem 2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .role-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #2c5f7c, #7ec8e3);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+
+    .role-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(44, 95, 124, 0.15);
+      border-color: #2c5f7c;
+    }
+
+    .role-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .role-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #2c5f7c, #7ec8e3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .role-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #1e4158;
+      margin-bottom: 0.75rem;
+    }
+
+    .role-description {
+      color: #5a6c7d;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .chat-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      overflow: hidden;
+      height: calc(100vh - 200px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #2c5f7c 0%, #1e4158 100%);
+      color: white;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .save-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .message {
+      display: flex;
+      gap: 1rem;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.hadi {
+      flex-direction: row;
+    }
+
+    .message.patient {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .message.hadi .message-avatar {
+      background: linear-gradient(135deg, #2c5f7c, #7ec8e3);
+      color: white;
+    }
+
+    .message.patient .message-avatar {
+      background: #e9ecef;
+      color: #1e4158;
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      line-height: 1.6;
+    }
+
+    .message.hadi .message-content {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+    }
+
+    .message.patient .message-content {
+      background: linear-gradient(135deg, #2c5f7c, #1e4158);
+      color: white;
+    }
+
+    .message-image {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 0.75rem;
+      cursor: pointer;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 0.4rem;
+      padding: 1rem;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2c5f7c;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-10px); }
+    }
+
+    .input-container {
+      border-top: 1px solid #e9ecef;
+      padding: 1.5rem 2rem;
+      background: white;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    .input-field {
+      flex: 1;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: none;
+      min-height: 50px;
+      max-height: 150px;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #2c5f7c;
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .action-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .action-btn.secondary {
+      background: #f8f9fa;
+      color: #2c5f7c;
+      border: 1px solid #e9ecef;
+    }
+
+    .action-btn.secondary:hover {
+      background: #e9ecef;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #2c5f7c, #1e4158);
+      color: white;
+    }
+
+    .action-btn.primary:hover {
+      transform: scale(1.05);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .doctor-queue {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .queue-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1e4158;
+    }
+
+    .queue-count {
+      background: linear-gradient(135deg, #2c5f7c, #7ec8e3);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    .patient-card {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 16px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .patient-card:hover {
+      transform: translateX(4px);
+      box-shadow: 0 8px 24px rgba(44, 95, 124, 0.12);
+      border-color: #2c5f7c;
+    }
+
+    .patient-card.urgent {
+      border-left: 4px solid #dc3545;
+    }
+
+    .patient-info {
+      flex: 1;
+    }
+
+    .patient-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .patient-name {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1e4158;
+    }
+
+    .urgent-badge {
+      background: #dc3545;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .patient-meta {
+      display: flex;
+      gap: 2rem;
+      color: #5a6c7d;
+      font-size: 0.95rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chief-complaint {
+      background: #f8f9fa;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-top: 0.75rem;
+      font-style: italic;
+      color: #1e4158;
+    }
+
+    .view-note-btn {
+      background: linear-gradient(135deg, #2c5f7c, #1e4158);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .view-note-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .soap-note-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .soap-note-header {
+      background: linear-gradient(135deg, #2c5f7c 0%, #1e4158 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .soap-patient-info h2 {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .soap-meta {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .soap-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .soap-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .soap-btn.edit {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .soap-btn.edit:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .soap-btn.back {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .soap-note-content {
+      padding: 2rem;
+    }
+
+    .soap-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .soap-section-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c5f7c;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .soap-section-content {
+      color: #1e4158;
+      line-height: 1.8;
+      font-size: 1.05rem;
+    }
+
+    .soap-section-content textarea {
+      width: 100%;
+      min-height: 150px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    .soap-section-content textarea:focus {
+      outline: none;
+      border-color: #2c5f7c;
+    }
+
+    .differential-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .differential-item {
+      background: #f8f9fa;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      border-left: 4px solid #2c5f7c;
+    }
+
+    .differential-rank {
+      font-weight: 700;
+      color: #2c5f7c;
+      margin-right: 0.5rem;
+    }
+
+    .differential-name {
+      font-weight: 600;
+      color: #1e4158;
+      margin-bottom: 0.5rem;
+    }
+
+    .differential-rationale {
+      color: #5a6c7d;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .treatment-plan {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .treatment-category {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+
+    .treatment-category-title {
+      font-weight: 700;
+      color: #2c5f7c;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .treatment-items {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .treatment-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .treatment-checkbox {
+      margin-top: 0.25rem;
+      cursor: pointer;
+    }
+
+    .treatment-text {
+      flex: 1;
+    }
+
+    .treatment-citation {
+      color: #2c5f7c;
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      font-style: italic;
+    }
+
+    .consent-screen {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: white;
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+
+    .consent-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1e4158;
+      margin-bottom: 1.5rem;
+    }
+
+    .consent-content {
+      color: #5a6c7d;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .consent-content h3 {
+      color: #1e4158;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .consent-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      cursor: pointer;
+    }
+
+    .consent-checkbox input {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .consent-checkbox label {
+      flex: 1;
+      cursor: pointer;
+      font-weight: 600;
+      color: #1e4158;
+    }
+
+    .consent-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, #2c5f7c, #1e4158);
+      color: white;
+    }
+
+    .btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(44, 95, 124, 0.3);
+    }
+
+    .btn.primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn.secondary {
+      background: #f8f9fa;
+      color: #1e4158;
+      border: 1px solid #e9ecef;
+    }
+
+    .btn.secondary:hover {
+      background: #e9ecef;
+    }
+
+    .feedback-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s;
+    }
+
+    .feedback-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .feedback-title {
+      font-family: 'Crimson Pro', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e4158;
+      margin-bottom: 1rem;
+    }
+
+    .feedback-textarea {
+      width: 100%;
+      min-height: 150px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 1rem;
+    }
+
+    .rating-stars {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      justify-content: center;
+    }
+
+    .star {
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .star:hover {
+      transform: scale(1.1);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .welcome-title {
+        font-size: 2rem;
+      }
+      
+      .welcome-subtitle {
+        font-size: 1rem;
+      }
+      
+      .patient-card {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .view-note-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .soap-note-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .soap-actions {
+        width: 100%;
+      }
+      
+      .soap-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    // Icon components using Lucide
+    const Icon = ({ name, size = 24, ...props }) => {
+      const IconComponent = lucide[name];
+      return IconComponent ? React.createElement(IconComponent, { size, ...props }) : null;
+    };
+
+    const HadiHealth = () => {
+      const [currentView, setCurrentView] = useState('welcome');
+      const [userRole, setUserRole] = useState(null);
+      const [userName, setUserName] = useState('');
+      const [consentGiven, setConsentGiven] = useState(false);
+      
+      const [messages, setMessages] = useState([]);
+      const [inputText, setInputText] = useState('');
+      const [isTyping, setIsTyping] = useState(false);
+      const [isRecording, setIsRecording] = useState(false);
+      const [sessionData, setSessionData] = useState({
+        chiefComplaint: '',
+        history: {},
+        medications: [],
+        allergies: [],
+        medicalHistory: [],
+        surgicalHistory: [],
+        familyHistory: '',
+        socialHistory: '',
+        reviewOfSystems: {},
+        vitalSigns: {}
+      });
+      const [autoSaved, setAutoSaved] = useState(false);
+      
+      const [patientQueue, setPatientQueue] = useState([]);
+      const [selectedPatient, setSelectedPatient] = useState(null);
+      const [editMode, setEditMode] = useState(false);
+      const [editedNote, setEditedNote] = useState(null);
+      const [showFeedback, setShowFeedback] = useState(false);
+      const [feedbackRating, setFeedbackRating] = useState(0);
+      
+      const messagesEndRef = useRef(null);
+
+      useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+      useEffect(() => {
+        if (userRole === 'patient' && messages.length > 0) {
+          const timer = setTimeout(() => {
+            setAutoSaved(true);
+            setTimeout(() => setAutoSaved(false), 2000);
+          }, 1000);
+          return () => clearTimeout(timer);
+        }
+      }, [sessionData, userRole, messages]);
+
+      const startPatientChat = () => {
+        setCurrentView('patient');
+        const welcomeMessage = {
+          sender: 'hadi',
+          text: "Hello! I'm Hadi, your AI medical assistant. I'm here to help gather your medical history and understand what brought you in today. Everything we discuss is confidential and will be reviewed by your doctor.\n\nTo get started, could you please tell me in your own words: What brings you in today?",
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+      };
+
+      const handleConsent = (role) => {
+        setUserRole(role);
+        setCurrentView('consent');
+      };
+
+      const acceptConsent = () => {
+        if (userRole === 'patient') {
+          setUserName('John Smith');
+          startPatientChat();
+        } else {
+          setUserName('Dr. Sarah Johnson');
+          loadDoctorQueue();
+          setCurrentView('doctor');
+        }
+      };
+
+      const loadDoctorQueue = () => {
+        const mockQueue = [
+          {
+            id: 1,
+            name: 'Emily Rodriguez',
+            age: 34,
+            gender: 'Female',
+            chiefComplaint: 'Chest pain with shortness of breath',
+            timestamp: new Date(Date.now() - 15 * 60000),
+            urgent: true,
+            completed: true
+          },
+          {
+            id: 2,
+            name: 'Michael Chen',
+            age: 52,
+            gender: 'Male',
+            chiefComplaint: 'Persistent cough for 3 weeks',
+            timestamp: new Date(Date.now() - 45 * 60000),
+            urgent: false,
+            completed: true
+          },
+          {
+            id: 3,
+            name: 'Sarah Williams',
+            age: 28,
+            gender: 'Female',
+            chiefComplaint: 'Recurrent headaches',
+            timestamp: new Date(Date.now() - 90 * 60000),
+            urgent: false,
+            completed: true
+          }
+        ];
+        setPatientQueue(mockQueue);
+      };
+
+      const getHadiResponse = async (userMessage) => {
+        setIsTyping(true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        let response = '';
+        const lowerMessage = userMessage.toLowerCase();
+        
+        if (messages.length === 1) {
+          const chiefComplaint = userMessage;
+          setSessionData(prev => ({ ...prev, chiefComplaint }));
+          
+          if (lowerMessage.includes('chest pain') || lowerMessage.includes('chest')) {
+            response = "I understand you're experiencing chest pain. This is important information. Let me ask you some detailed questions to better understand your symptoms.\n\nWhen did this chest pain start?";
+          } else if (lowerMessage.includes('cough')) {
+            response = "Thank you for telling me about your cough. I'd like to learn more about this.\n\nHow long have you been experiencing this cough?";
+          } else if (lowerMessage.includes('headache')) {
+            response = "I see you're dealing with headaches. Let me gather some important details.\n\nWhen did these headaches first start?";
+          } else {
+            response = `Thank you for sharing that you're experiencing ${chiefComplaint.toLowerCase()}. I'd like to understand this better.\n\nWhen did this first start?`;
+          }
+        } else if (lowerMessage.match(/\d+\s*(day|week|month|hour)/)) {
+          response = "Thank you for that information. On a scale of 1 to 10, where 10 is the worst pain imaginable, how would you rate the severity of your symptoms?";
+        } else if (lowerMessage.match(/\d+/) && messages[messages.length - 1]?.text?.includes('scale')) {
+          if (sessionData.chiefComplaint.toLowerCase().includes('chest pain')) {
+            response = "I appreciate you sharing that. For chest pain, it's important to understand the character. How would you describe the pain? Is it:\n- Sharp and stabbing\n- Dull and aching\n- Crushing or squeezing\n- Burning\n- Or something else?";
+          } else {
+            response = "Thank you. Does anything make the symptoms better or worse?";
+          }
+        } else if (lowerMessage.includes('sharp') || lowerMessage.includes('dull') || lowerMessage.includes('crushing') || lowerMessage.includes('burning')) {
+          response = "That's helpful information. Does the pain stay in one place, or does it radiate or spread to other areas? For example, to your arm, jaw, back, or abdomen?";
+        } else {
+          response = "Thank you for that information. Let me continue gathering your medical history.\n\nDo you have any chronic medical conditions such as diabetes, high blood pressure, heart disease, asthma, or others?";
+        }
+        
+        setIsTyping(false);
+        return response;
+      };
+
+      const handleSendMessage = async () => {
+        if (!inputText.trim()) return;
+        
+        const userMessage = {
+          sender: 'patient',
+          text: inputText,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, userMessage]);
+        setInputText('');
+        
+        const response = await getHadiResponse(inputText);
+        
+        const hadiMessage = {
+          sender: 'hadi',
+          text: response,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, hadiMessage]);
+      };
+
+      const viewPatientNote = (patient) => {
+        setSelectedPatient(patient);
+        setEditedNote(generateSOAPNote(patient));
+        setCurrentView('soapNote');
+      };
+
+      const generateSOAPNote = (patient) => {
+        if (patient.id === 1) {
+          return {
+            subjective: `Chief Complaint: Chest pain with shortness of breath
+
+History of Present Illness:
+34-year-old female presents with acute onset of chest pain that started approximately 2 hours ago. Pain is described as sharp, located in the left chest, rated 7/10 in severity. Associated with shortness of breath and mild diaphoresis. Pain does not radiate. No alleviating or aggravating factors identified. Denies fever, cough, or recent trauma.
+
+Past Medical History:
+- Asthma (well-controlled)
+- Anxiety disorder
+
+Medications:
+- Albuterol inhaler PRN
+- Sertraline 50mg daily
+
+Allergies: Penicillin (rash)
+
+Family History:
+Mother with history of pulmonary embolism at age 55
+
+Social History:
+Non-smoker, occasional alcohol use, works as software engineer, recently returned from international flight 3 days ago
+
+Review of Systems:
+Cardiovascular: Chest pain and palpitations as described above
+Respiratory: Shortness of breath, no cough or wheezing
+Constitutional: No fever, some fatigue
+All other systems reviewed and negative`,
+
+            objective: `Vital Signs:
+- BP: 138/85 mmHg
+- HR: 102 bpm
+- RR: 22 breaths/min
+- Temp: 98.2°F (36.8°C)
+- SpO2: 94% on room air
+
+Physical Examination:
+General: Alert, oriented, appears anxious and in mild distress
+Cardiovascular: Tachycardic, regular rhythm, no murmurs
+Respiratory: Tachypneic, clear breath sounds bilaterally, no wheezes or crackles
+Extremities: No edema, no calf tenderness, negative Homan's sign
+Chest wall: No tenderness to palpation`,
+
+            assessment: [
+              {
+                rank: 1,
+                diagnosis: 'Pulmonary Embolism',
+                rationale: 'Most concerning given recent air travel, tachycardia, tachypnea, hypoxia, family history of PE, and acute onset pleuritic chest pain with dyspnea. Wells score indicates moderate-high probability.'
+              },
+              {
+                rank: 2,
+                diagnosis: 'Pneumothorax',
+                rationale: 'Sharp chest pain with dyspnea could indicate spontaneous pneumothorax, though physical exam does not reveal decreased breath sounds. Would be supported by imaging.'
+              },
+              {
+                rank: 3,
+                diagnosis: 'Anxiety/Panic Attack',
+                rationale: 'Patient has history of anxiety disorder. Presentation could be consistent with panic attack, though objective findings (tachycardia, hypoxia) warrant ruling out organic causes first.'
+              },
+              {
+                rank: 4,
+                diagnosis: 'Musculoskeletal Pain',
+                rationale: 'Chest wall pain possible, though lack of tenderness on palpation and associated dyspnea make this less likely as primary diagnosis.'
+              }
+            ],
+
+            plan: {
+              diagnostics: [
+                { text: 'STAT CT Pulmonary Angiography (CTPA) - gold standard for PE diagnosis', citation: 'PIOPED II Trial, JAMA 2006', checked: true },
+                { text: 'D-dimer (if CTPA not immediately available)', citation: 'Wells PE Score validation', checked: true },
+                { text: 'ECG - evaluate for S1Q3T3 pattern, tachycardia, or other abnormalities', citation: 'AHA/ACC Guidelines 2019', checked: true },
+                { text: 'Chest X-ray - evaluate for pneumothorax, infiltrate, other pathology', citation: 'ACEP Clinical Policy 2011', checked: true },
+                { text: 'Complete Blood Count, Basic Metabolic Panel, Troponin', citation: 'Standard emergency workup', checked: true },
+                { text: 'Arterial Blood Gas - assess hypoxia and A-a gradient', citation: 'PIOPED criteria', checked: false }
+              ],
+              medications: [
+                { text: 'Oxygen therapy to maintain SpO2 >94%', citation: 'BTS Guidelines 2019', checked: true },
+                { text: 'If PE confirmed: Initiate anticoagulation with LMWH (Enoxaparin 1mg/kg SC q12h) or fondaparinux', citation: 'ACCP Guidelines 2021', checked: false },
+                { text: 'Consider anxiolytic (Lorazepam 0.5-1mg PO/IV) for anxiety after medical clearance', citation: 'Clinical judgment', checked: false }
+              ],
+              monitoring: [
+                { text: 'Continuous pulse oximetry and cardiac monitoring', citation: 'Emergency department protocol', checked: true },
+                { text: 'NPO until PE ruled out (potential for intervention)', citation: 'Standard precaution', checked: true }
+              ],
+              disposition: [
+                { text: 'Admit to hospital if PE confirmed - telemetry floor or ICU depending on severity', citation: 'PESI score risk stratification', checked: false },
+                { text: 'If PE ruled out and alternative diagnosis found, treat accordingly', citation: '', checked: false },
+                { text: 'Cardiology and/or Pulmonology consultation as needed', citation: '', checked: false }
+              ]
+            }
+          };
+        } else {
+          return {
+            subjective: `Chief Complaint: ${patient.chiefComplaint}
+
+History of Present Illness:
+${patient.age}-year-old ${patient.gender.toLowerCase()} presents with the above complaint. [Detailed history would be gathered by Hadi during patient interview]
+
+Past Medical History: To be completed
+Medications: To be completed
+Allergies: NKDA
+Family History: Non-contributory
+Social History: To be completed
+Review of Systems: To be completed`,
+
+            objective: `Vital Signs: To be obtained
+Physical Examination: To be completed`,
+
+            assessment: [
+              { rank: 1, diagnosis: 'Pending full history and examination', rationale: 'Assessment will be generated after complete patient interview' }
+            ],
+
+            plan: {
+              diagnostics: [{ text: 'To be determined based on presentation', citation: '', checked: false }],
+              medications: [{ text: 'To be determined', citation: '', checked: false }],
+              monitoring: [{ text: 'Standard monitoring', citation: '', checked: false }],
+              disposition: [{ text: 'To be determined', citation: '', checked: false }]
+            }
+          };
+        }
+      };
+
+      const renderConsent = () => (
+        <div className="consent-screen">
+          <h1 className="consent-title">
+            {userRole === 'patient' ? 'Patient Consent Form' : 'Healthcare Provider Agreement'}
+          </h1>
+          
+          <div className="consent-content">
+            <p>Welcome to Hadi Health. Before we begin, please review and accept the following terms:</p>
+            
+            <h3>AI-Assisted Healthcare</h3>
+            <p>
+              Hadi uses artificial intelligence to gather medical history and generate clinical assessments. 
+              All AI-generated recommendations must be reviewed and approved by a licensed healthcare provider 
+              before any medical decisions are made.
+            </p>
+            
+            <h3>Data Privacy & Security</h3>
+            <p>
+              Your health information is encrypted and stored in compliance with PIPEDA and PHIPA regulations. 
+              Data will be retained for a minimum of 10 years as required by Canadian law. Your information 
+              will never be shared without your explicit consent, except as required by law.
+            </p>
+            
+            <h3>Clinical Oversight</h3>
+            <p>
+              {userRole === 'patient' 
+                ? 'A licensed physician will review all assessments and recommendations before any treatment is provided. In case of emergency, please call 911 immediately.'
+                : 'As a healthcare provider, you acknowledge that all AI-generated content requires your professional review and judgment before clinical application.'}
+            </p>
+            
+            <h3>Audit Trail</h3>
+            <p>All interactions are logged for quality assurance, regulatory compliance, and your protection.</p>
+          </div>
+          
+          <div className="consent-checkbox" onClick={() => setConsentGiven(!consentGiven)}>
+            <input 
+              type="checkbox" 
+              checked={consentGiven}
+              onChange={() => setConsentGiven(!consentGiven)}
+            />
+            <label>
+              I have read and agree to the terms above. I understand that Hadi Health uses AI technology 
+              and that all medical decisions require physician oversight.
+            </label>
+          </div>
+          
+          <div className="consent-buttons">
+            <button className="btn secondary" onClick={() => setCurrentView('welcome')}>Back</button>
+            <button className="btn primary" disabled={!consentGiven} onClick={acceptConsent}>
+              Continue to {userRole === 'patient' ? 'Interview' : 'Portal'}
+            </button>
+          </div>
+        </div>
+      );
+
+      const renderWelcome = () => (
+        <div className="welcome-screen">
+          <h1 className="welcome-title">
+            Welcome to <span className="logo-accent">Hadi</span> Health
+          </h1>
+          <p className="welcome-subtitle">
+            AI-powered medical interviews that deliver world-class clinical assessments, 
+            combining the expertise of thousands of physicians to enhance patient care 
+            without compromising safety or outcomes.
+          </p>
+          
+          <div className="role-selector">
+            <div className="role-card" onClick={() => handleConsent('patient')}>
+              <div className="role-icon">
+                <Icon name="User" size={32} />
+              </div>
+              <h3 className="role-title">I'm a Patient</h3>
+              <p className="role-description">
+                Start your medical interview with Hadi. Share your symptoms and medical 
+                history in a comfortable, conversational way.
+              </p>
+            </div>
+            
+            <div className="role-card" onClick={() => handleConsent('doctor')}>
+              <div className="role-icon">
+                <Icon name="FileText" size={32} />
+              </div>
+              <h3 className="role-title">I'm a Healthcare Provider</h3>
+              <p className="role-description">
+                Review AI-generated patient assessments, complete SOAP notes, and 
+                evidence-based treatment plans.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderPatientChat = () => (
+        <div className="chat-container">
+          <div className="chat-header">
+            <h2 className="chat-title">Interview with Hadi</h2>
+            <div className="save-indicator">
+              {autoSaved && (
+                <>
+                  <Icon name="CheckCircle" size={16} />
+                  <span>Saved</span>
+                </>
+              )}
+            </div>
+          </div>
+          
+          <div className="messages-container">
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`message ${msg.sender}`}>
+                <div className="message-avatar">{msg.sender === 'hadi' ? 'H' : 'P'}</div>
+                <div className="message-content">
+                  {msg.text}
+                  {msg.image && <img src={msg.image} alt="Uploaded" className="message-image" />}
+                </div>
+              </div>
+            ))}
+            
+            {isTyping && (
+              <div className="message hadi">
+                <div className="message-avatar">H</div>
+                <div className="message-content">
+                  <div className="typing-indicator">
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                    <div className="typing-dot"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+          
+          <div className="input-container">
+            <div className="input-wrapper">
+              <textarea
+                className="input-field"
+                placeholder="Type your response..."
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              
+              <div className="input-actions">
+                <button 
+                  className="action-btn secondary"
+                  onClick={() => setIsRecording(!isRecording)}
+                  title="Voice input"
+                >
+                  <Icon name="Mic" size={20} />
+                </button>
+                
+                <button className="action-btn secondary" title="Upload image">
+                  <Icon name="Upload" size={20} />
+                </button>
+                
+                <button 
+                  className="action-btn primary"
+                  onClick={handleSendMessage}
+                  disabled={!inputText.trim()}
+                >
+                  <Icon name="Send" size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderDoctorQueue = () => (
+        <div className="doctor-queue">
+          <div className="queue-header">
+            <h1 className="queue-title">Patient Queue</h1>
+            <div className="queue-count">
+              {patientQueue.filter(p => p.completed).length} Completed Assessments
+            </div>
+          </div>
+          
+          {patientQueue.map(patient => (
+            <div 
+              key={patient.id} 
+              className={`patient-card ${patient.urgent ? 'urgent' : ''}`}
+              onClick={() => viewPatientNote(patient)}
+            >
+              <div className="patient-info">
+                <div className="patient-header">
+                  <h3 className="patient-name">{patient.name}</h3>
+                  {patient.urgent && <span className="urgent-badge">Urgent</span>}
+                </div>
+                
+                <div className="patient-meta">
+                  <div className="meta-item">
+                    <Icon name="User" size={16} />
+                    <span>{patient.age}yo {patient.gender}</span>
+                  </div>
+                  <div className="meta-item">
+                    <Icon name="Clock" size={16} />
+                    <span>{new Date(patient.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+                
+                <div className="chief-complaint">"{patient.chiefComplaint}"</div>
+              </div>
+              
+              <button className="view-note-btn">
+                View Note <Icon name="ChevronRight" size={20} />
+              </button>
+            </div>
+          ))}
+        </div>
+      );
+
+      const renderSOAPNote = () => {
+        if (!selectedPatient || !editedNote) return null;
+        
+        return (
+          <div className="soap-note-container">
+            <div className="soap-note-header">
+              <div className="soap-patient-info">
+                <h2>{selectedPatient.name}</h2>
+                <div className="soap-meta">
+                  <span>{selectedPatient.age}yo {selectedPatient.gender}</span>
+                  <span>•</span>
+                  <span>{new Date(selectedPatient.timestamp).toLocaleString()}</span>
+                </div>
+              </div>
+              
+              <div className="soap-actions">
+                {editMode ? (
+                  <>
+                    <button className="soap-btn edit" onClick={() => setEditMode(false)}>
+                      <Icon name="Save" size={18} /> Save
+                    </button>
+                    <button className="soap-btn back" onClick={() => setEditMode(false)}>
+                      <Icon name="X" size={18} /> Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="soap-btn edit" onClick={() => setEditMode(true)}>
+                      <Icon name="Edit2" size={18} /> Edit
+                    </button>
+                    <button className="soap-btn edit" onClick={() => setShowFeedback(true)}>
+                      <Icon name="MessageSquare" size={18} /> Feedback
+                    </button>
+                    <button className="soap-btn back" onClick={() => setCurrentView('doctor')}>
+                      Back
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            <div className="soap-note-content">
+              <div className="soap-section">
+                <h3 className="soap-section-title">Subjective</h3>
+                <div className="soap-section-content">
+                  {editMode ? (
+                    <textarea 
+                      value={editedNote.subjective}
+                      onChange={(e) => setEditedNote({...editedNote, subjective: e.target.value})}
+                    />
+                  ) : (
+                    <pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>
+                      {editedNote.subjective}
+                    </pre>
+                  )}
+                </div>
+              </div>
+              
+              <div className="soap-section">
+                <h3 className="soap-section-title">Objective</h3>
+                <div className="soap-section-content">
+                  {editMode ? (
+                    <textarea 
+                      value={editedNote.objective}
+                      onChange={(e) => setEditedNote({...editedNote, objective: e.target.value})}
+                    />
+                  ) : (
+                    <pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>
+                      {editedNote.objective}
+                    </pre>
+                  )}
+                </div>
+              </div>
+              
+              <div className="soap-section">
+                <h3 className="soap-section-title">Assessment - Differential Diagnoses</h3>
+                <div className="differential-list">
+                  {editedNote.assessment.map((diff, idx) => (
+                    <div key={idx} className="differential-item">
+                      <div>
+                        <span className="differential-rank">#{diff.rank}</span>
+                        <span className="differential-name">{diff.diagnosis}</span>
+                      </div>
+                      <div className="differential-rationale">{diff.rationale}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="soap-section">
+                <h3 className="soap-section-title">Plan</h3>
+                <div className="treatment-plan">
+                  <div className="treatment-category">
+                    <div className="treatment-category-title">Diagnostic Studies</div>
+                    <div className="treatment-items">
+                      {editedNote.plan.diagnostics.map((item, idx) => (
+                        <div key={idx} className="treatment-item">
+                          <input 
+                            type="checkbox" 
+                            className="treatment-checkbox"
+                            checked={item.checked}
+                            onChange={() => {
+                              const newPlan = {...editedNote};
+                              newPlan.plan.diagnostics[idx].checked = !item.checked;
+                              setEditedNote(newPlan);
+                            }}
+                          />
+                          <div className="treatment-text">
+                            {item.text}
+                            {item.citation && (
+                              <div className="treatment-citation">Evidence: {item.citation}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="treatment-category">
+                    <div className="treatment-category-title">Medications & Interventions</div>
+                    <div className="treatment-items">
+                      {editedNote.plan.medications.map((item, idx) => (
+                        <div key={idx} className="treatment-item">
+                          <input 
+                            type="checkbox" 
+                            className="treatment-checkbox"
+                            checked={item.checked}
+                            onChange={() => {
+                              const newPlan = {...editedNote};
+                              newPlan.plan.medications[idx].checked = !item.checked;
+                              setEditedNote(newPlan);
+                            }}
+                          />
+                          <div className="treatment-text">
+                            {item.text}
+                            {item.citation && (
+                              <div className="treatment-citation">Evidence: {item.citation}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="treatment-category">
+                    <div className="treatment-category-title">Monitoring</div>
+                    <div className="treatment-items">
+                      {editedNote.plan.monitoring.map((item, idx) => (
+                        <div key={idx} className="treatment-item">
+                          <input 
+                            type="checkbox" 
+                            className="treatment-checkbox"
+                            checked={item.checked}
+                            onChange={() => {
+                              const newPlan = {...editedNote};
+                              newPlan.plan.monitoring[idx].checked = !item.checked;
+                              setEditedNote(newPlan);
+                            }}
+                          />
+                          <div className="treatment-text">
+                            {item.text}
+                            {item.citation && (
+                              <div className="treatment-citation">Evidence: {item.citation}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="treatment-category">
+                    <div className="treatment-category-title">Disposition</div>
+                    <div className="treatment-items">
+                      {editedNote.plan.disposition.map((item, idx) => (
+                        <div key={idx} className="treatment-item">
+                          <input 
+                            type="checkbox" 
+                            className="treatment-checkbox"
+                            checked={item.checked}
+                            onChange={() => {
+                              const newPlan = {...editedNote};
+                              newPlan.plan.disposition[idx].checked = !item.checked;
+                              setEditedNote(newPlan);
+                            }}
+                          />
+                          <div className="treatment-text">
+                            {item.text}
+                            {item.citation && (
+                              <div className="treatment-citation">Evidence: {item.citation}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const renderFeedbackModal = () => {
+        if (!showFeedback) return null;
+        
+        return (
+          <div className="feedback-modal" onClick={() => setShowFeedback(false)}>
+            <div className="feedback-content" onClick={(e) => e.stopPropagation()}>
+              <h3 className="feedback-title">Provide Feedback on Assessment</h3>
+              
+              <div className="rating-stars">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <span 
+                    key={star}
+                    className="star"
+                    onClick={() => setFeedbackRating(star)}
+                    style={{ color: star <= feedbackRating ? '#2c5f7c' : '#e9ecef' }}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              
+              <textarea 
+                className="feedback-textarea"
+                placeholder="Share your thoughts on the accuracy and completeness of this assessment..."
+              />
+              
+              <div className="consent-buttons">
+                <button className="btn secondary" onClick={() => setShowFeedback(false)}>
+                  Cancel
+                </button>
+                <button className="btn primary" onClick={() => {
+                  alert('Thank you for your feedback! This helps improve Hadi\'s clinical accuracy.');
+                  setShowFeedback(false);
+                  setFeedbackRating(0);
+                }}>
+                  Submit Feedback
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="app-container">
+          {currentView !== 'welcome' && currentView !== 'consent' && (
+            <div className="header">
+              <div className="header-content">
+                <div className="logo">
+                  Hadi <span className="logo-accent">Health</span>
+                </div>
+                
+                {userName && (
+                  <div className="user-info">
+                    <span className="user-name">{userName}</span>
+                    <button className="logout-btn" onClick={() => {
+                      setCurrentView('welcome');
+                      setUserRole(null);
+                      setUserName('');
+                      setMessages([]);
+                      setPatientQueue([]);
+                      setSelectedPatient(null);
+                    }}>
+                      <Icon name="LogOut" size={18} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div className="main-content">
+            {currentView === 'welcome' && renderWelcome()}
+            {currentView === 'consent' && renderConsent()}
+            {currentView === 'patient' && renderPatientChat()}
+            {currentView === 'doctor' && renderDoctorQueue()}
+            {currentView === 'soapNote' && renderSOAPNote()}
+          </div>
+          
+          {renderFeedbackModal()}
+        </div>
+      );
+    };
+
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Render the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<HadiHealth />);
+  </script>
+</body>
+</html>
